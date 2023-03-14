@@ -1,3 +1,5 @@
+use nalgebra::Matrix1;
+
 fn main() {
-    println!("Hello, World!");
+    let mat = Matrix1
 }

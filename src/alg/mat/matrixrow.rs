@@ -21,7 +21,7 @@ pub struct MatrixRowIter<'a, T> {
 impl<'a, T> MatrixRow<'a, T> {
     pub(crate) fn positate(&self, index: isize) -> isize {
         if index < 0 {
-            self.mat.cols() + index
+            self.mat.width() + index
         } else {
             index
         }
@@ -31,7 +31,7 @@ impl<'a, T> MatrixRow<'a, T> {
 impl<'a, T> MatrixRowMut<'a, T> {
     pub(crate) fn positate(&self, index: isize) -> isize {
         if index < 0 {
-            self.mat.cols() + index
+            self.mat.width() + index
         } else {
             index
         }
@@ -70,8 +70,8 @@ impl<'a, T> IntoIterator for MatrixRowMut<'a, T> {
     type IntoIter = super::IterMut<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let start = self.row * self.mat.cols();
-        let end = start + self.mat.cols() - 1;
+        let start = self.row * self.mat.width();
+        let end = start + self.mat.width() - 1;
         unsafe { super::IterMut::new(start as usize, end as usize, self.mat.buffer_mut(), 1) }
     }
 }
@@ -81,7 +81,7 @@ impl<'a, T> Index<isize> for MatrixRow<'a, T> {
 
     fn index(&self, mut index: isize) -> &Self::Output {
         index = self.positate(index);
-        let p = index + (self.mat.cols() * self.row);
+        let p = index + (self.mat.width() * self.row);
         &self.mat.buffer()[p as usize]
     }
 }
@@ -91,7 +91,7 @@ impl<'a, T> Index<isize> for MatrixRowMut<'a, T> {
 
     fn index(&self, mut index: isize) -> &Self::Output {
         index = self.positate(index);
-        let p = index + (self.mat.cols() * self.row);
+        let p = index + (self.mat.width() * self.row);
         &self.mat.buffer()[p as usize]
     }
 }
@@ -99,7 +99,7 @@ impl<'a, T> Index<isize> for MatrixRowMut<'a, T> {
 impl<'a, T> IndexMut<isize> for MatrixRowMut<'a, T> {
     fn index_mut(&mut self, mut index: isize) -> &mut Self::Output {
         index = self.positate(index);
-        let p = index + (self.mat.cols() * self.row);
+        let p = index + (self.mat.width() * self.row);
         &mut self.mat.buffer_mut()[p as usize]
     }
 }
@@ -109,7 +109,7 @@ impl<'a, T> Index<ColIndex> for MatrixRow<'a, T> {
 
     fn index(&self, index: ColIndex) -> &Self::Output {
         let index = self.positate(index.col);
-        let p = index + (self.mat.cols() * self.row);
+        let p = index + (self.mat.width() * self.row);
         &self.mat.buffer()[p as usize]
     }
 }
@@ -119,7 +119,7 @@ impl<'a, T> Index<ColIndex> for MatrixRowMut<'a, T> {
 
     fn index(&self, index: ColIndex) -> &Self::Output {
         let index = self.positate(index.col);
-        let p = index + (self.mat.cols() * self.row);
+        let p = index + (self.mat.width() * self.row);
         &self.mat.buffer()[p as usize]
     }
 }
@@ -127,7 +127,7 @@ impl<'a, T> Index<ColIndex> for MatrixRowMut<'a, T> {
 impl<'a, T> IndexMut<ColIndex> for MatrixRowMut<'a, T> {
     fn index_mut(&mut self, index: ColIndex) -> &mut Self::Output {
         let index = self.positate(index.col);
-        let p = index + (self.mat.cols() * self.row);
+        let p = index + (self.mat.width() * self.row);
         &mut self.mat.buffer_mut()[p as usize]
     }
 }

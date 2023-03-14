@@ -5,7 +5,10 @@ use std::{
 
 use crate::{Dimension, Get, GetMut};
 
-use super::{MatIndex, MatrixColumn, MatrixColumnMut, MatrixRow, MatrixRowMut};
+use super::{
+    ColIter, ColIterMut, MatIndex, MatrixColumn, MatrixColumnMut, MatrixRow, MatrixRowMut, RowIter,
+    RowIterMut,
+};
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Matrix<T> {
@@ -43,12 +46,28 @@ impl<T> Matrix<T> {
         self.dimension
     }
 
-    pub fn cols(&self) -> isize {
+    pub fn width(&self) -> isize {
         self.dimension().columns
     }
 
-    pub fn rows(&self) -> isize {
+    pub fn height(&self) -> isize {
         self.dimension().rows
+    }
+
+    pub fn rows<'a>(&'a self) -> RowIter<'a, T> {
+        RowIter { mat: self, pos: 0 }
+    }
+
+    pub fn columns<'a>(&'a self) -> ColIter<'a, T> {
+        ColIter { mat: self, pos: 0 }
+    }
+
+    pub fn rows_mut<'a>(&'a mut self) -> RowIterMut<'a, T> {
+        RowIterMut { mat: self, pos: 0 }
+    }
+
+    pub fn columns_mut<'a>(&'a mut self) -> ColIterMut<'a, T> {
+        ColIterMut { mat: self, pos: 0 }
     }
 
     pub(super) fn buffer_mut(&mut self) -> &mut [T] {
@@ -166,11 +185,14 @@ impl<T> Mul<Matrix<T>> for Matrix<T> {
     }
 }
 
-impl<T: Mul<i32, Output = T>> Mul<i32> for Matrix<T> {
+impl<T: Clone + Mul<T, Output = T>> Mul<T> for Matrix<T> {
     type Output = Matrix<T>;
 
-    fn mul(self, rhs: i32) -> Self::Output {
-        todo!()
+    fn mul(mut self, rhs: T) -> Self::Output {
+        self.rows_mut()
+            .for_each(|v| v.into_iter().for_each(|v| *v = v.clone() * rhs.clone()));
+
+        self
     }
 }
 
@@ -240,5 +262,58 @@ impl<T> MatrixContent<T> {
         }
         output.pop();
         output
+    }
+}
+
+#[derive(Clone)]
+pub struct GenericMatrix(Matrix<i32>);
+
+impl Add<Self> for &GenericMatrix {
+    type Output = Option<GenericMatrix>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        match &self.0 + &rhs.0 {
+            Some(v) => Some(GenericMatrix(v)),
+            None => return None,
+        }
+    }
+}
+
+impl GenericMatrix {
+    pub fn new(rows: isize, columns: isize) -> Self {
+        Self(Matrix::new(Dimension::new(rows, columns)))
+    }
+    pub fn with(dimension: Dimension) -> Self {
+        Self(Matrix::new(dimension))
+    }
+
+    pub fn with_init(dimension: Dimension, init: i32) -> Self {
+        Self(Matrix::with_init(dimension, init))
+    }
+}
+
+impl std::fmt::Debug for GenericMatrix {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(&self.0, f)
+    }
+}
+
+impl std::fmt::Display for GenericMatrix {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(&self.0, f)
+    }
+}
+
+impl std::ops::Deref for GenericMatrix {
+    type Target = Matrix<i32>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for GenericMatrix {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }

@@ -1,15 +1,15 @@
+mod cols;
+mod macros;
 mod matrix;
-
-mod matrixcol;
-mod matrixrow;
+mod rows;
 
 use std::{marker::PhantomData, ptr::NonNull};
 
-pub use matrixcol::*;
-pub use matrixrow::*;
+pub use cols::*;
+pub use matrix::*;
+pub use rows::*;
 
-pub use matrix::GenericMatrix;
-pub use matrix::Matrix;
+pub use macros::*;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RowIndex {
@@ -120,13 +120,7 @@ impl<'a, T> Iterator for RowIterMut<'a, T> {
         if self.pos == self.mat.height() {
             None
         } else {
-            self.pos += 1;
-            unsafe {
-                Some(MatrixRowMut {
-                    mat: self.mat,
-                    row: self.pos - 1,
-                })
-            }
+            todo!()
         }
     }
 }
@@ -136,20 +130,14 @@ pub struct ColIterMut<'a, T> {
     pos: isize,
 }
 
-impl<'a, T: 'a> Iterator for ColIterMut<'a, T> {
+impl<'a, T> Iterator for ColIterMut<'a, T> {
     type Item = MatrixColumnMut<'a, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos == self.mat.height() {
             None
         } else {
-            self.pos += 1;
-            unsafe {
-                Some(MatrixColumnMut {
-                    mat: self.mat,
-                    col: self.pos - 1,
-                })
-            }
+            todo!()
         }
     }
 }
@@ -157,7 +145,7 @@ impl<'a, T: 'a> Iterator for ColIterMut<'a, T> {
 /// IterMut
 
 #[derive(Debug, Clone)]
-pub(crate) struct IterMut<'a, T: 'a> {
+pub struct IterMut<'a, T: 'a> {
     ptr: NonNull<T>,
     end: *mut T,
     step: usize,

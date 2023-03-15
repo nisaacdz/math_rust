@@ -1,4 +1,4 @@
-use crate::alg::mat::{ColIndex, MatIndex, RowIndex};
+use crate::alg::matrices::{ColIndex, RowIndex, MatIndex};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Dimension {

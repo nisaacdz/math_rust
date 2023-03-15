@@ -1,6 +1,6 @@
 use std::{
     fmt::{Debug, Display},
-    ops::{Add, Index, IndexMut, Mul, Sub},
+    ops::{Add, Index, IndexMut, Mul},
 };
 
 use crate::{Dimension, Get, GetMut};
@@ -26,6 +26,10 @@ impl<T> Matrix<T> {
             dimension,
             content: MatrixContent::new(size),
         }
+    }
+
+    pub fn with_content(dimension: Dimension, content: MatrixContent<T>) -> Self {
+        Self { dimension, content }
     }
 
     pub fn with_init(dimension: Dimension, init: T) -> Self
@@ -177,14 +181,6 @@ impl<T: Clone + Add<T, Output = T>> Add<&Matrix<T>> for &Matrix<T> {
     }
 }
 
-impl<T> Mul<Matrix<T>> for Matrix<T> {
-    type Output = Option<Self>;
-
-    fn mul(self, rhs: Matrix<T>) -> Self::Output {
-        todo!()
-    }
-}
-
 impl<T: Clone + Mul<T, Output = T>> Mul<T> for Matrix<T> {
     type Output = Matrix<T>;
 
@@ -193,14 +189,6 @@ impl<T: Clone + Mul<T, Output = T>> Mul<T> for Matrix<T> {
             .for_each(|v| v.into_iter().for_each(|v| *v = v.clone() * rhs.clone()));
 
         self
-    }
-}
-
-impl<T> Sub<Matrix<T>> for Matrix<T> {
-    type Output = Option<Self>;
-
-    fn sub(self, rhs: Matrix<T>) -> Self::Output {
-        todo!()
     }
 }
 
@@ -217,6 +205,12 @@ impl<T> MatrixContent<T> {
         let vec = vec![T::default(); size];
         Self {
             values: vec.into_boxed_slice(),
+        }
+    }
+
+    pub fn new_unchecked(values: Vec<T>) -> Self {
+        Self {
+            values: values.into_boxed_slice(),
         }
     }
 
@@ -262,58 +256,5 @@ impl<T> MatrixContent<T> {
         }
         output.pop();
         output
-    }
-}
-
-#[derive(Clone)]
-pub struct GenericMatrix(Matrix<i32>);
-
-impl Add<Self> for &GenericMatrix {
-    type Output = Option<GenericMatrix>;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        match &self.0 + &rhs.0 {
-            Some(v) => Some(GenericMatrix(v)),
-            None => return None,
-        }
-    }
-}
-
-impl GenericMatrix {
-    pub fn new(rows: isize, columns: isize) -> Self {
-        Self(Matrix::new(Dimension::new(rows, columns)))
-    }
-    pub fn with(dimension: Dimension) -> Self {
-        Self(Matrix::new(dimension))
-    }
-
-    pub fn with_init(dimension: Dimension, init: i32) -> Self {
-        Self(Matrix::with_init(dimension, init))
-    }
-}
-
-impl std::fmt::Debug for GenericMatrix {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Debug::fmt(&self.0, f)
-    }
-}
-
-impl std::fmt::Display for GenericMatrix {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(&self.0, f)
-    }
-}
-
-impl std::ops::Deref for GenericMatrix {
-    type Target = Matrix<i32>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl std::ops::DerefMut for GenericMatrix {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
     }
 }
